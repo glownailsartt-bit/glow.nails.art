@@ -10,14 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
-  // 🟢 Script de Google
-  const googleScriptUrl =
-    "https://script.google.com/macros/s/AKfycbzBBgqVjHQJbOKZ1fFxvEsZLLYVQ2z1xSnMXnzuNX1kWdn_XK71iXrA1i3EYCGWT1vDYg/exec";
+  // ✅ URL del Apps Script y proxy CORS
+  const proxyUrl = "https://api.allorigins.win/raw?url=";
+  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzBBgqVjHQJbOKZ1fFxvEsZLLYVQ2z1xSnMXnzuNX1kWdn_XK71iXrA1i3EYCGWT1vDYg/exec";
 
-  // 🧩 Proxy público para evitar CORS
-  const proxyUrl = "https://corsproxy.io/?";
-
-  // 🕓 Generar horarios
+  // 🕓 Generar horarios de 8 AM a 5 PM
   function generarHoras() {
     horaSelect.innerHTML = '<option value="">Selecciona una hora</option>';
     for (let h = 8; h <= 17; h++) {
@@ -28,9 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
       horaSelect.appendChild(option);
     }
   }
+
   generarHoras();
 
-  // 📅 Ver disponibilidad
+  // 📅 Ver disponibilidad al cambiar la fecha
   fechaInput.addEventListener("change", async () => {
     const fecha = fechaInput.value;
     if (!fecha) return;
@@ -38,11 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("📆 Verificando disponibilidad para:", fecha);
 
     try {
-      // ⚠️ IMPORTANTE: concatenamos proxy + URL codificada del script
-      const finalUrl = proxyUrl + encodeURIComponent(`${googleScriptUrl}?fecha=${fecha}`);
-      console.log("🌐 Consultando a:", finalUrl);
-
-      const res = await fetch(finalUrl);
+      const url = `${proxyUrl}${encodeURIComponent(`${googleScriptUrl}?fecha=${fecha}`)}`;
+      const res = await fetch(url);
       const data = await res.json();
 
       console.log("📋 Horas ocupadas:", data.ocupadas);
@@ -50,15 +45,15 @@ document.addEventListener("DOMContentLoaded", () => {
       generarHoras();
 
       // Deshabilitar las horas ocupadas
-      data.ocupadas.forEach((horaOcupada) => {
-        const option = [...horaSelect.options].find(
-          (opt) => opt.value === horaOcupada
-        );
-        if (option) {
-          option.disabled = true;
-          option.textContent += " (Ocupada)";
-        }
-      });
+      if (data.ocupadas && Array.isArray(data.ocupadas)) {
+        data.ocupadas.forEach((horaOcupada) => {
+          const option = [...horaSelect.options].find(opt => opt.value === horaOcupada);
+          if (option) {
+            option.disabled = true;
+            option.textContent += " (Ocupada)";
+          }
+        });
+      }
     } catch (err) {
       console.error("❌ Error al obtener disponibilidad:", err);
       alert("Error al verificar disponibilidad. Intenta más tarde.");
@@ -80,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // ⛔ Verifica si la hora seleccionada está ocupada
     if (horaSelect.selectedOptions[0].disabled) {
       alert("🚫 Esta hora ya está ocupada. Elige otra disponible.");
       return;
@@ -87,6 +83,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       console.log("📧 Enviando correo con EmailJS...");
+
+      // 📩 Enviar correo con EmailJS
       const emailResponse = await emailjs.send(
         "service_tp0xzhi",
         "template_6csycq9",
@@ -101,26 +99,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      // 📆 Enviar cita al calendario
-      const formData = new FormData();
-      formData.append("nombre", nombre);
-      formData.append("email", email);
-      formData.append("servicio", servicio);
-      formData.append("fecha", fecha);
-      formData.append("hora", hora);
+      // 📆 Enviar datos al Apps Script a través del proxy
+      const citaData = { nombre, email, servicio, fecha, hora };
+      const postUrl = `${proxyUrl}${encodeURIComponent(googleScriptUrl)}`;
 
-      await fetch(googleScriptUrl, {
+      const response = await fetch(postUrl, {
         method: "POST",
-        mode: "no-cors",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(citaData),
       });
 
-      console.log("✅ Cita enviada al calendario.");
+      console.log("✅ Cita enviada al calendario mediante proxy CORS.");
 
       successMsg.style.display = "block";
       errorMsg.style.display = "none";
       form.reset();
       generarHoras();
+
     } catch (err) {
       console.error("❌ Error detallado:", err);
       successMsg.style.display = "none";
