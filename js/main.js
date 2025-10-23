@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🟣 URLs (proxy + tu script de Google)
   const proxyUrl = "https://corsproxy.io/?";
-  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxjujPdfdtbjJGYA1x8VAj1imftoUB121V1AP51EsXQVMbf8r7WWFksDbl98HtyJ5pZ_A/exec";
+  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzBBgqVjHQJbOKZ1fFxvEsZLLYVQ2z1xSnMXnzuNX1kWdn_XK71iXrA1i3EYCGWT1vDYg/exec";
 
   // 🕓 Generar horarios dinámicamente según disponibilidad
   async function generarHoras(fechaSeleccionada) {
@@ -116,3 +116,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
