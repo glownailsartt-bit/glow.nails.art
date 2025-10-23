@@ -9,11 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
-  // 🟢 URL de tu Google Apps Script (tuya actualizada)
+  // 🟢 URL de tu Google Apps Script (ya funcional)
   const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwbuGpcYr7LPurHdLgI03hqmScNh6pl_-tuLhwRYASn7bs7Xk1-oTpzouydPZ6GX6aWug/exec";
 
-  // 🟢 Proxy público para evitar CORS
-  const proxyUrl = "https://api.allorigins.win/raw?url=";
+  // 🟢 Proxy Cloudflare estable y gratuito
+  const proxyUrl = "https://proxyagenda.glow-nails-artt.workers.dev/?url=";
 
   // 🕓 Generar horarios de 8:00 a 17:00
   function generarHoras() {
