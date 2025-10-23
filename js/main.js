@@ -1,6 +1,5 @@
-// ✅ Inicializa EmailJS correctamente
 (function () {
-  emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key
+  emailjs.init("Xfy8rt5BbNV_iG2CB");
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,11 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
-  // ✅ URLs
-  const proxyUrl = "https://api.allorigins.win/raw?url=";
-  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbyydBWLAcSBm0FOrqaVD7F3HxW8Qzbe9MvIPo4qVFzO8L2ZCG225ZTfHk0jJhBQsKEx/exec";
+  // 🟢 URL de tu Google Apps Script (tuya actualizada)
+  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwbuGpcYr7LPurHdLgI03hqmScNh6pl_-tuLhwRYASn7bs7Xk1-oTpzouydPZ6GX6aWug/exec";
 
-  // 🕓 Generar horas disponibles
+  // 🟢 Proxy público para evitar CORS
+  const proxyUrl = "https://api.allorigins.win/raw?url=";
+
+  // 🕓 Generar horarios de 8:00 a 17:00
   function generarHoras() {
     horaSelect.innerHTML = '<option value="">Selecciona una hora</option>';
     for (let h = 8; h <= 17; h++) {
@@ -28,38 +29,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   generarHoras();
 
-  // 📅 Consultar disponibilidad al cambiar fecha
+  // 📅 Al cambiar la fecha, consultar disponibilidad
   fechaInput.addEventListener("change", async () => {
     const fecha = fechaInput.value;
     if (!fecha) return;
 
-    console.log("📆 Consultando disponibilidad para:", fecha);
-
     try {
-      const url = `${proxyUrl}${encodeURIComponent(`${googleScriptUrl}?fecha=${fecha}`)}`;
-      const res = await fetch(url);
+      const res = await fetch(`${proxyUrl}${googleScriptUrl}?fecha=${fecha}`);
       const data = await res.json();
-
-      console.log("📋 Horas ocupadas:", data.ocupadas);
 
       generarHoras();
 
       if (data.ocupadas && Array.isArray(data.ocupadas)) {
-        data.ocupadas.forEach((horaOcupada) => {
-          const option = [...horaSelect.options].find(opt => opt.value === horaOcupada);
-          if (option) {
-            option.disabled = true;
-            option.textContent += " (Ocupada)";
+        data.ocupadas.forEach(horaOcupada => {
+          const opt = [...horaSelect.options].find(o => o.value === horaOcupada);
+          if (opt) {
+            opt.disabled = true;
+            opt.textContent += " (Ocupada)";
           }
         });
       }
     } catch (err) {
       console.error("❌ Error al obtener disponibilidad:", err);
-      alert("Error al verificar disponibilidad. Intenta más tarde.");
+      alert("Error al verificar disponibilidad. Intenta nuevamente más tarde.");
     }
   });
 
-  // 📤 Enviar formulario
+  // 📤 Enviar cita
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -70,54 +66,48 @@ document.addEventListener("DOMContentLoaded", () => {
     const hora = horaSelect.value;
 
     if (!nombre || !email || !servicio || !fecha || !hora) {
-      alert("⚠️ Por favor completa todos los campos.");
+      alert("⚠️ Por favor completa todos los campos antes de enviar.");
       return;
     }
 
     if (horaSelect.selectedOptions[0].disabled) {
-      alert("🚫 Esta hora ya está ocupada. Elige otra disponible.");
+      alert("🚫 Esta hora ya está ocupada.");
       return;
     }
 
     try {
-      console.log("📧 Enviando correo con EmailJS...");
-
-      await emailjs.send(
-        "service_tp0xzhi",
-        "template_6csycq9",
-        {
-          to_name: nombre,
-          to_email: email,
-          servicio,
-          fecha,
-          hora,
-        }
-      );
-
-      console.log("✅ Correo enviado correctamente.");
-
-      const citaData = { nombre, email, servicio, fecha, hora };
-      const postUrl = `${proxyUrl}${encodeURIComponent(googleScriptUrl)}`;
-
-      await fetch(postUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(citaData),
+      // ✉️ Enviar correo de confirmación
+      await emailjs.send("service_tp0xzhi", "template_6csycq9", {
+        to_name: nombre,
+        to_email: email,
+        servicio,
+        fecha,
+        hora,
       });
 
-      console.log("✅ Cita registrada en Google Calendar mediante proxy.");
+      // 🗓️ Guardar cita en el calendario mediante Apps Script
+      const postData = { nombre, email, servicio, fecha, hora };
+      const response = await fetch(`${proxyUrl}${googleScriptUrl}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postData),
+      });
 
-      successMsg.style.display = "block";
-      errorMsg.style.display = "none";
-      form.reset();
-      generarHoras();
+      const result = await response.json();
+      if (result.success) {
+        successMsg.style.display = "block";
+        errorMsg.style.display = "none";
+        form.reset();
+        generarHoras();
+      } else {
+        throw new Error(result.message || "Error al crear la cita.");
+      }
 
     } catch (err) {
       console.error("❌ Error al enviar cita:", err);
       successMsg.style.display = "none";
       errorMsg.style.display = "block";
-      alert("❌ Ocurrió un error al enviar la cita. Intenta de nuevo.");
+      alert("❌ No se pudo registrar la cita. Intenta nuevamente.");
     }
   });
 });
-
