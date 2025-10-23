@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Glow Nails Art | Spa de Uñas</title>
+  <meta name="description" content="Spa especializado en belleza y cuidado de uñas. Donde cada detalle brilla con estilo.">
+  <link rel="icon" href="imagenes/logo.jpg" type="image/jpeg">
+  <style>
+    body { font-family: Inter, Poppins, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:#fff; color:#333; }
+    header { display:flex; align-items:center; gap:16px; padding:20px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.06); position:sticky; top:0; z-index:20; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .brand img { width:72px; height:72px; border-radius:50%; object-fit:cover; border:4px solid #fff; box-shadow:0 4px 12px rgba(214,51,132,0.12); }
+    h1 { font-size:20px; color:#d63384; margin:0; }
+    .desc { font-size:13px; color:#777; margin-top:4px; }
+    nav { margin-left:auto; display:flex; gap:12px; align-items:center; }
+    nav a { color:#444; text-decoration:none; font-weight:600; padding:8px 10px; border-radius:8px; }
+    nav a:hover { color:#d63384; background:#fff0f6; }
+
+    .hero { background:linear-gradient(180deg,#fff0f6,#fff); padding:56px 18px; text-align:center; }
+    .hero h2 { font-size:34px; margin:0 0 10px; color:#d63384; }
+    .hero p { color:#666; margin:0 0 18px; }
+    .cta { display:inline-block; background:#d63384; color:#fff; padding:12px 20px; border-radius:28px; text-decoration:none; font-weight:700; }
+
+    .content { max-width:1100px; margin:48px auto; padding:0 18px; }
+    .services { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:36px; }
+    .service { background:#fff; border-radius:14px; padding:18px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+    .gallery { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:40px; }
+    .gallery img { width:100%; height:220px; object-fit:cover; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+
+    footer { text-align:center; color:#888; padding:28px 12px; border-top:1px solid #f5f5f7; }
+
+    /* WhatsApp flotante */
+    .whatsapp { position:fixed; right:18px; bottom:18px; width:64px; height:64px; background:#25D366; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; color:#fff; box-shadow:0 10px 30px rgba(37,211,102,0.18); font-size:26px; z-index:50; }
+
+    @media (max-width:600px) {
+      .hero h2 { font-size:26px; }
+      .brand img { width:60px; height:60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <img src="imagenes/logo.jpg" alt="Glow Nails Art - logo">
+      <div>
+        <h1>Glow Nails Art</h1>
+        <div class="desc">Spa especializado en belleza y cuidado de uñas. Donde cada detalle brilla con estilo.</div>
+      </div>
+    </div>
+
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#galeria">Galería</a>
+      <a href="agendar.html">Agendar cita</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Bienvenida a Glow Nails Art</h2>
+    <p>Un espacio exclusivo para tu cuidado y estilo. Calidad, higiene y diseño personalizado.</p>
+    <a class="cta" href="agendar.html">Agendar tu cita</a>
+  </section>
+
+  <main class="content">
+    <section id="servicios">
+      <h3 style="color:#d63384;margin-bottom:12px;">Servicios Populares</h3>
+      <div class="services">
+        <div class="service">💅 <strong>Manicure clásico</strong><div style="color:#666;margin-top:8px;">45 minutos • Cuidado completo</div></div>
+        <div class="service">✨ <strong>Nail art personalizado</strong><div style="color:#666;margin-top:8px;">Diseños exclusivos</div></div>
+        <div class="service">🦶 <strong>Pedicure spa</strong><div style="color:#666;margin-top:8px;">Relajación y exfoliación</div></div>
+        <div class="service">💎 <strong>Extensiones de uñas</strong><div style="color:#666;margin-top:8px;">Durabilidad y acabado profesional</div></div>
+      </div>
+    </section>
+
+    <section id="galeria">
+      <h3 style="color:#d63384;margin-bottom:12px;">Galería</h3>
+      <div class="gallery">
+        <img src="imagenes/1.jpg" alt="Uñas 1">
+        <img src="imagenes/2.jpg" alt="Uñas 2">
+        <img src="imagenes/3.jpg" alt="Uñas 3">
+        <img src="imagenes/4.jpg" alt="Uñas 4">
+        <img src="imagenes/5.jpg" alt="Uñas 5">
+        <img src="imagenes/6.jpg" alt="Uñas 6">
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Glow Nails Art — Contacto: +57 312 456 3132
+  </footer>
+
+  <!-- WhatsApp flotante -->
+  <a class="whatsapp" href="https://wa.me/573124563132?text=%C2%A1Hola%20Glow%20Nails%20Art!%20%F0%9F%8C%B8%20Vengo%20desde%20la%20p%C3%A1gina%20web%20y%20quiero%20agendar%20una%20cita." target="_blank" title="Chatear por WhatsApp">💬</a>
+
+</body>
+</html>

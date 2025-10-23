@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cancelar cita | Glow Nails Art</title>
+  <link rel="icon" href="imagenes/logo.jpg" type="image/jpeg">
+  <style>
+    body { font-family:Poppins; background:#fff; margin:0; color:#333; }
+    header { display:flex; align-items:center; gap:16px; padding:20px; box-shadow:0 2px 6px rgba(0,0,0,0.06); }
+    h1 { color:#d63384; margin:0; font-size:20px; }
+    main { max-width:600px; margin:40px auto; padding:0 16px; }
+    h2 { text-align:center; color:#d63384; margin-bottom:24px; }
+    form { display:flex; flex-direction:column; gap:16px; }
+    input, button { padding:12px; border-radius:8px; border:1px solid #ddd; }
+    button { background:#d63384; color:#fff; border:none; font-weight:600; cursor:pointer; }
+    button:hover { background:#b52c70; }
+    .message { text-align:center; padding:12px; border-radius:8px; display:none; }
+    .success { background:#e6ffed; color:#207544; }
+    .error { background:#ffe6e6; color:#b30000; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Glow Nails Art</h1>
+  </header>
+  <main>
+    <h2>Cancelar cita</h2>
+    <form id="cancelForm">
+      <input type="email" id="emailCancel" placeholder="Correo electrónico con el que agendaste" required />
+      <input type="date" id="fechaCancel" required />
+      <button type="submit">Cancelar cita</button>
+    </form>
+    <div id="msgCancel" class="message"></div>
+  </main>
+  <script src="js/main.js"></script>
+</body>
+</html>
