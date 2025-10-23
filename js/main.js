@@ -1,5 +1,5 @@
 // ✅ Inicializa EmailJS correctamente
-(function() {
+(function () {
   emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key (User ID)
 })();
 
@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
       horaSelect.appendChild(option);
     }
   }
-
   generarHoras();
 
   // 📤 Enviar formulario
@@ -44,8 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 📩 Enviar correo con EmailJS
       const emailResponse = await emailjs.send(
-        "service_tp0xzhi",   // Service ID de EmailJS
-        "template_6csycq9",  // Template ID de EmailJS
+        "service_tp0xzhi", // Service ID de EmailJS
+        "template_6csycq9", // Template ID de EmailJS
         {
           to_name: nombre,
           to_email: email,
@@ -57,15 +56,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
-      console.log("📆 Enviando datos al calendario (con proxy CORS)...");
+      // 📅 Enviar datos al script de Google Apps Script usando proxy CORS
+      console.log("📆 Enviando datos al calendario...");
 
-      // 🔗 URL del proxy + tu Apps Script
+      // 🌐 URL del proxy + tu Apps Script
       const proxyUrl = "https://corsproxy.io/?";
-      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec";
+      const googleScriptUrl =
+        "https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec";
 
-      // 🧩 Enviar datos como JSON
-      const response = await fetch(proxyUrl + googleScriptUrl, {
+      // 📤 Enviar datos al Google Script usando el proxy
+      await fetch(proxyUrl + googleScriptUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
