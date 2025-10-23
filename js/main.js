@@ -1,5 +1,5 @@
 // ✅ Inicializa EmailJS correctamente
-(function () {
+(function() {
   emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key (User ID)
 })();
 
@@ -43,5 +43,48 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 📩 Enviar correo con EmailJS
       const emailResponse = await emailjs.send(
+        "service_tp0xzhi",   // Service ID de EmailJS
+        "template_6csycq9",  // Template ID de EmailJS
+        {
+          to_name: nombre,
+          to_email: email,
+          servicio,
+          fecha,
+          hora,
+        }
+      );
 
+      console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
+      // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
+      console.log("📆 Enviando datos al calendario...");
+
+      // 👇 Usamos FormData para evitar errores CORS
+      const formData = new FormData();
+      formData.append("nombre", nombre);
+      formData.append("email", email);
+      formData.append("servicio", servicio);
+      formData.append("fecha", fecha);
+      formData.append("hora", hora);
+
+      await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
+        method: "POST",
+        mode: "no-cors", // 👈 Evita el bloqueo CORS
+        body: formData,
+      });
+
+      console.log("✅ Cita enviada al calendario (modo no-cors, sin leer respuesta).");
+
+      // ✅ Mostrar mensaje de éxito
+      successMsg.style.display = "block";
+      errorMsg.style.display = "none";
+      form.reset();
+
+    } catch (err) {
+      console.error("❌ Error detallado:", err);
+      successMsg.style.display = "none";
+      errorMsg.style.display = "block";
+      alert("❌ Ocurrió un error al enviar la cita. Intenta de nuevo.");
+    }
+  });
+});
