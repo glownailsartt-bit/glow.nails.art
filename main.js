@@ -53,23 +53,19 @@ document.addEventListener("DOMContentLoaded", () => {
           hora,
         }
       );
-
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
+      // 📅 Enviar datos al script de Google Apps Script
       console.log("📆 Enviando datos al calendario...");
+
       const response = await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
         method: "POST",
+        mode: "no-cors", // ⚠️ IMPORTANTE: evita el bloqueo CORS en GitHub Pages
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
       });
 
-      const result = await response.json();
-
-      if (!result.success) throw new Error(result.error || "Error al crear evento");
-
-      console.log("✅ Cita agendada correctamente en Google Calendar.");
-
+      console.log("📤 Respuesta enviada (modo no-cors, no se puede leer el cuerpo).");
       successMsg.style.display = "block";
       errorMsg.style.display = "none";
       form.reset();
@@ -82,5 +78,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-
