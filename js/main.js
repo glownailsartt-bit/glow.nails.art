@@ -10,11 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
-  // 🟢 Tu script de Google
+  // 🟢 Script de Google
   const googleScriptUrl =
     "https://script.google.com/macros/s/AKfycbzBBgqVjHQJbOKZ1fFxvEsZLLYVQ2z1xSnMXnzuNX1kWdn_XK71iXrA1i3EYCGWT1vDYg/exec";
 
-  // 🧩 Proxy público para evitar CORS (usamos corsproxy.io)
+  // 🧩 Proxy público para evitar CORS
   const proxyUrl = "https://corsproxy.io/?";
 
   // 🕓 Generar horarios
@@ -38,7 +38,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("📆 Verificando disponibilidad para:", fecha);
 
     try {
-      const res = await fetch(`${proxyUrl}${googleScriptUrl}?fecha=${fecha}`);
+      // ⚠️ IMPORTANTE: concatenamos proxy + URL codificada del script
+      const finalUrl = proxyUrl + encodeURIComponent(`${googleScriptUrl}?fecha=${fecha}`);
+      console.log("🌐 Consultando a:", finalUrl);
+
+      const res = await fetch(finalUrl);
       const data = await res.json();
 
       console.log("📋 Horas ocupadas:", data.ocupadas);
