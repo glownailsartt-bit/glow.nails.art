@@ -1,5 +1,5 @@
 // ✅ Inicializa EmailJS correctamente
-(function() {
+(function () {
   emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key (User ID)
 })();
 
@@ -10,44 +10,50 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
-  // 🟣 URLs (proxy + tu script de Google)
-  const proxyUrl = "https://corsproxy.io/?";
   const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzBBgqVjHQJbOKZ1fFxvEsZLLYVQ2z1xSnMXnzuNX1kWdn_XK71iXrA1i3EYCGWT1vDYg/exec";
 
-  // 🕓 Generar horarios dinámicamente según disponibilidad
-  async function generarHoras(fechaSeleccionada) {
-    horaSelect.innerHTML = '<option value="">Cargando horas...</option>';
-
-    try {
-      const res = await fetch(proxyUrl + googleScriptUrl + `?fecha=${fechaSeleccionada}`);
-      const data = await res.json();
-      const ocupadas = data.ocupadas || [];
-
-      horaSelect.innerHTML = '<option value="">Selecciona una hora</option>';
-      for (let h = 8; h <= 17; h++) {
-        const hora = `${h.toString().padStart(2, "0")}:00`;
-        const option = document.createElement("option");
-        option.value = hora;
-        option.textContent = hora;
-
-        if (ocupadas.includes(hora)) {
-          option.disabled = true;
-          option.textContent += " (No disponible)";
-        }
-
-        horaSelect.appendChild(option);
-      }
-
-    } catch (err) {
-      console.error("❌ Error al obtener disponibilidad:", err);
-      horaSelect.innerHTML = '<option value="">Error al cargar horas</option>';
+  // 🕓 Generar horarios de 8 AM a 5 PM
+  function generarHoras() {
+    horaSelect.innerHTML = '<option value="">Selecciona una hora</option>';
+    for (let h = 8; h <= 17; h++) {
+      const hora = `${h.toString().padStart(2, "0")}:00`;
+      const option = document.createElement("option");
+      option.value = hora;
+      option.textContent = hora;
+      horaSelect.appendChild(option);
     }
   }
 
-  // 📅 Cuando cambia la fecha → actualizar horas
-  fechaInput.addEventListener("change", (e) => {
-    const fechaSeleccionada = e.target.value;
-    if (fechaSeleccionada) generarHoras(fechaSeleccionada);
+  generarHoras();
+
+  // 📅 Ver disponibilidad al cambiar la fecha
+  fechaInput.addEventListener("change", async () => {
+    const fecha = fechaInput.value;
+    if (!fecha) return;
+
+    console.log("📆 Verificando disponibilidad para:", fecha);
+
+    try {
+      const res = await fetch(`${googleScriptUrl}?fecha=${fecha}`);
+      const data = await res.json();
+
+      console.log("📋 Horas ocupadas:", data.ocupadas);
+
+      // Volver a generar todas las horas
+      generarHoras();
+
+      // Deshabilitar las horas ocupadas
+      data.ocupadas.forEach((horaOcupada) => {
+        const option = [...horaSelect.options].find(opt => opt.value === horaOcupada);
+        if (option) {
+          option.disabled = true;
+          option.textContent += " (Ocupada)";
+        }
+      });
+    } catch (err) {
+      console.error("❌ Error al obtener disponibilidad:", err);
+      alert("Error al verificar disponibilidad. Intenta más tarde.");
+    }
   });
 
   // 📤 Enviar formulario
@@ -62,6 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!nombre || !email || !servicio || !fecha || !hora) {
       alert("⚠️ Por favor completa todos los campos antes de enviar.");
+      return;
+    }
+
+    // ⛔ Verifica si la hora seleccionada está ocupada
+    if (horaSelect.selectedOptions[0].disabled) {
+      alert("🚫 Esta hora ya está ocupada. Elige otra disponible.");
       return;
     }
 
@@ -80,33 +92,29 @@ document.addEventListener("DOMContentLoaded", () => {
           hora,
         }
       );
+
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      console.log("📆 Enviando cita al calendario...");
+      // 📆 Enviar cita al Google Script
+      const formData = new FormData();
+      formData.append("nombre", nombre);
+      formData.append("email", email);
+      formData.append("servicio", servicio);
+      formData.append("fecha", fecha);
+      formData.append("hora", hora);
 
-      const response = await fetch(proxyUrl + googleScriptUrl, {
+      await fetch(googleScriptUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
+        mode: "no-cors",
+        body: formData,
       });
 
-      let result = {};
-      try {
-        result = await response.json();
-      } catch {
-        console.warn("⚠️ No se pudo leer la respuesta JSON del servidor (modo proxy).");
-      }
-
-      if (result.success === false && result.message === "Hora no disponible") {
-        alert("❌ La hora seleccionada ya está ocupada. Por favor elige otra.");
-        return;
-      }
-
-      console.log("✅ Cita enviada correctamente al calendario.");
+      console.log("✅ Cita enviada al calendario.");
 
       successMsg.style.display = "block";
       errorMsg.style.display = "none";
       form.reset();
+      generarHoras();
 
     } catch (err) {
       console.error("❌ Error detallado:", err);
