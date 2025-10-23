@@ -55,15 +55,14 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      // 📅 Enviar datos al script de Google Apps Script
-      console.log("📆 Enviando datos al calendario...");
+     // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
+console.log("📆 Enviando datos al calendario...");
+const response = await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
+});
 
-      const response = await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
-        method: "POST",
-        mode: "no-cors", // ⚠️ IMPORTANTE: evita el bloqueo CORS en GitHub Pages
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
-      });
 
       console.log("📤 Respuesta enviada (modo no-cors, no se puede leer el cuerpo).");
       successMsg.style.display = "block";
@@ -78,3 +77,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
