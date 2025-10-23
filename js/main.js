@@ -58,23 +58,20 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
       // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
-      console.log("📆 Enviando datos al calendario...");
+      console.log("📆 Enviando datos al calendario (con proxy CORS)...");
 
-      // 👇 Usamos FormData para evitar errores CORS
-      const formData = new FormData();
-      formData.append("nombre", nombre);
-      formData.append("email", email);
-      formData.append("servicio", servicio);
-      formData.append("fecha", fecha);
-      formData.append("hora", hora);
+      // 🔗 URL del proxy + tu Apps Script
+      const proxyUrl = "https://corsproxy.io/?";
+      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec";
 
-      await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
+      // 🧩 Enviar datos como JSON
+      const response = await fetch(proxyUrl + googleScriptUrl, {
         method: "POST",
-        mode: "no-cors", // 👈 Evita el bloqueo CORS
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
       });
 
-      console.log("✅ Cita enviada al calendario (modo no-cors, sin leer respuesta).");
+      console.log("✅ Cita enviada al calendario (a través del proxy CORS).");
 
       // ✅ Mostrar mensaje de éxito
       successMsg.style.display = "block";
