@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
       console.log("📆 Enviando datos al calendario...");
-      const response = await fetch("https://script.google.com/macros/s/AKfycbx3qaQZex86l5tc9HXYd6jZlzda3J4LMB73r6nP_BXHXChcEdV1J58aMHVWurQt_pw7oQ/exec", {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
@@ -82,4 +82,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
 
