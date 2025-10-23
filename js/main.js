@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("📧 Enviando correo con EmailJS...");
 
-      // Enviar correo con EmailJS
+      // 📩 Enviar correo con EmailJS
       const emailResponse = await emailjs.send(
         "service_tp0xzhi",   // Service ID de EmailJS
         "template_6csycq9",  // Template ID de EmailJS
@@ -55,19 +55,17 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      // 📅 Enviar datos al script de Google Apps Script
-      console.log("📆 Enviando datos al calendario...");
-      const response = await fetch("https://script.google.com/macros/s/AKfycbw_N6H9IPPmvRi-Utbcuw-kHK6EqZOX0LV5XUM1g8SGLkYCnUYF5j3rLm0vyCdNIVEOUw/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
-      });
+     // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
+console.log("📆 Enviando datos al calendario...");
+const response = await fetch("https://script.google.com/macros/s/AKfycbziMu2eDSvY1cMloypHqFPR90riCLwodEpOb9wA5XbH5eZwCIqE61SFL4tWo4FSjZatfA/exec", {
 
-      const result = await response.json();
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
+});
 
-      if (!result.success) throw new Error(result.error || "Error al crear evento");
 
-      console.log("✅ Cita agendada correctamente en Google Calendar.");
+      console.log("📤 Respuesta enviada (modo no-cors, no se puede leer el cuerpo).");
       successMsg.style.display = "block";
       errorMsg.style.display = "none";
       form.reset();
@@ -76,7 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("❌ Error detallado:", err);
       successMsg.style.display = "none";
       errorMsg.style.display = "block";
-      alert("Ocurrió un error al enviar la cita. Intenta de nuevo.");
+      alert("❌ Ocurrió un error al enviar la cita. Intenta de nuevo.");
     }
   });
 });
+
