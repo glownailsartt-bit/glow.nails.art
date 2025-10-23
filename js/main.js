@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
       horaSelect.appendChild(option);
     }
   }
+
   generarHoras();
 
   // 📤 Enviar formulario
