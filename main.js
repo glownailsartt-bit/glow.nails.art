@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("📧 Enviando correo con EmailJS...");
 
-      // Enviar correo con EmailJS
+      // 📩 Enviar correo con EmailJS
       const emailResponse = await emailjs.send(
         "service_tp0xzhi",   // Service ID de EmailJS
         "template_6csycq9",  // Template ID de EmailJS
@@ -53,11 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
           hora,
         }
       );
+
       console.log("✅ Correo enviado:", emailResponse.status, emailResponse.text);
 
-      // 📅 Enviar datos al script de Google Apps Script
+      // 📅 Enviar datos al script de Google Apps Script (para agendar en Calendar)
       console.log("📆 Enviando datos al calendario...");
-      const response = await fetch("https://script.google.com/macros/s/AKfycbw_N6H9IPPmvRi-Utbcuw-kHK6EqZOX0LV5XUM1g8SGLkYCnUYF5j3rLm0vyCdNIVEOUw/exec", {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbyzYhyGvppNc_N8i_PHbDVR8IT-t_o-2FQx8NPUOFofbSqyW9FO16DUnyvP-BXRn2Hx/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre, email, servicio, fecha, hora }),
@@ -68,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!result.success) throw new Error(result.error || "Error al crear evento");
 
       console.log("✅ Cita agendada correctamente en Google Calendar.");
+
       successMsg.style.display = "block";
       errorMsg.style.display = "none";
       form.reset();
@@ -76,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("❌ Error detallado:", err);
       successMsg.style.display = "none";
       errorMsg.style.display = "block";
-      alert("Ocurrió un error al enviar la cita. Intenta de nuevo.");
+      alert("❌ Ocurrió un error al enviar la cita. Intenta de nuevo.");
     }
   });
 });
