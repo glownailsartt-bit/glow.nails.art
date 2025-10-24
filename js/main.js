@@ -1,6 +1,6 @@
-// ✅ Inicializa EmailJS
+// ✅ Inicializa EmailJS correctamente
 (function () {
-  emailjs.init("Xfy8rt5BbNV_iG2CB");
+  emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,27 +10,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
+  // 🟢 Tu Google Apps Script publicado
   const googleScriptUrl =
     "https://script.google.com/macros/s/AKfycbwbuGpcYr7LPurHdLgI03hqmScNh6pl_-tuLhwRYASn7bs7Xk1-oTpzouydPZ6GX6aWug/exec";
+
+  // 🟢 Proxy para evitar CORS
   const proxyUrl = "https://proxyagenda.glow-nails-artt.workers.dev/?url=";
 
-  // 🕓 Generar horarios de 8:00 a 17:00
-  function generarHoras(horasDeshabilitadas = []) {
+  // 🕓 Generar horarios disponibles (de 8:00 a 17:00)
+  function generarHoras() {
     horaSelect.innerHTML = '<option value="">Selecciona una hora</option>';
     for (let h = 8; h <= 17; h++) {
       const hora = `${h.toString().padStart(2, "0")}:00`;
       const option = document.createElement("option");
       option.value = hora;
       option.textContent = hora;
-      if (horasDeshabilitadas.includes(hora)) {
-        option.disabled = true;
-        option.textContent += " (Ocupada)";
-      }
       horaSelect.appendChild(option);
     }
   }
 
-  // 🟣 Mostrar loader mientras carga disponibilidad
+  // 🔒 Evitar seleccionar fechas pasadas
+  const hoy = new Date();
+  const hoyStr = hoy.toISOString().split("T")[0];
+  fechaInput.min = hoyStr;
+
+  // 🟣 Mostrar loader mientras se consulta disponibilidad
   function mostrarLoader(mostrar) {
     if (mostrar) {
       horaSelect.innerHTML = '<option>Cargando disponibilidad...</option>';
@@ -40,45 +44,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🧠 Configurar fecha mínima = hoy
-  const hoy = new Date();
-  const yyyy = hoy.getFullYear();
-  const mm = String(hoy.getMonth() + 1).padStart(2, "0");
-  const dd = String(hoy.getDate()).padStart(2, "0");
-  fechaInput.min = `${yyyy}-${mm}-${dd}`;
+  // 🟢 Marcar horas ocupadas en el select
+  function mostrarHorasOcupadas(ocupadas = [], fechaSeleccionada) {
+    generarHoras();
+
+    const ahora = new Date();
+    const fechaHoy = ahora.toISOString().split("T")[0];
+
+    // ⏰ Si es hoy, bloquear horas anteriores a la actual
+    if (fechaSeleccionada === fechaHoy) {
+      const horaActual = ahora.getHours();
+      [...horaSelect.options].forEach(opt => {
+        const horaOpt = parseInt(opt.value.split(":")[0]);
+        if (horaOpt <= horaActual) {
+          opt.disabled = true;
+          opt.textContent += " (No disponible)";
+        }
+      });
+    }
+
+    // 🔴 Marcar las horas que ya están ocupadas
+    ocupadas.forEach(horaOcupada => {
+      const opt = [...horaSelect.options].find(o => o.value === horaOcupada);
+      if (opt) {
+        opt.disabled = true;
+        opt.textContent += " (Ocupada)";
+      }
+    });
+  }
 
   generarHoras();
 
-  // 📅 Al cambiar la fecha, consultar disponibilidad
+  // 📅 Consultar disponibilidad al cambiar la fecha
   fechaInput.addEventListener("change", async () => {
     const fecha = fechaInput.value;
     if (!fecha) return;
 
-    mostrarLoader(true);
     const cacheKey = `ocupadas_${fecha}`;
     const cached = localStorage.getItem(cacheKey);
 
+    mostrarLoader(true);
+
+    // 🧠 Si ya hay caché, usarla inmediatamente
     if (cached) {
       const horas = JSON.parse(cached);
-      generarHoras(horas);
+      mostrarHorasOcupadas(horas, fecha);
       mostrarLoader(false);
-      console.log("📦 Usando caché:", horas);
-      filtrarHorasPasadas();
+      console.log("📦 Usando caché de disponibilidad:", horas);
       return;
     }
 
+    console.log("📡 Consultando disponibilidad para:", fecha);
     try {
       const res = await fetch(`${proxyUrl}${googleScriptUrl}?fecha=${fecha}`);
       const data = await res.json();
 
       if (data.ocupadas && Array.isArray(data.ocupadas)) {
         localStorage.setItem(cacheKey, JSON.stringify(data.ocupadas));
-        generarHoras(data.ocupadas);
+        mostrarHorasOcupadas(data.ocupadas, fecha);
       } else {
-        generarHoras();
+        mostrarHorasOcupadas([], fecha);
       }
-
-      filtrarHorasPasadas(); // ⏱️ Filtra horas pasadas si es hoy
 
     } catch (err) {
       console.error("❌ Error al obtener disponibilidad:", err);
@@ -88,26 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
       mostrarLoader(false);
     }
   });
-
-  // ⏱️ Bloquear horas pasadas si la fecha es hoy
-  function filtrarHorasPasadas() {
-    const fechaSeleccionada = fechaInput.value;
-    if (!fechaSeleccionada) return;
-
-    const hoyStr = `${yyyy}-${mm}-${dd}`;
-    if (fechaSeleccionada === hoyStr) {
-      const ahora = new Date();
-      const horaActual = ahora.getHours();
-
-      [...horaSelect.options].forEach((opt) => {
-        const h = parseInt(opt.value.split(":")[0]);
-        if (h <= horaActual) {
-          opt.disabled = true;
-          opt.textContent += " (No disponible)";
-        }
-      });
-    }
-  }
 
   // 📤 Enviar cita
   form.addEventListener("submit", async (e) => {
@@ -124,8 +130,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // 🚫 Bloquear citas en fechas pasadas
+    const hoy = new Date();
+    const fechaSeleccionada = new Date(fecha);
+    if (fechaSeleccionada < new Date(hoyStr)) {
+      alert("🚫 No puedes agendar en una fecha pasada.");
+      return;
+    }
+
+    // 🚫 Si es hoy y la hora ya pasó
+    if (fechaSeleccionada.toISOString().split("T")[0] === hoyStr) {
+      const horaActual = hoy.getHours();
+      const horaSeleccionada = parseInt(hora.split(":")[0]);
+      if (horaSeleccionada <= horaActual) {
+        alert("🚫 No puedes agendar en una hora que ya pasó.");
+        return;
+      }
+    }
+
     if (horaSelect.selectedOptions[0].disabled) {
-      alert("🚫 Esta hora no está disponible.");
+      alert("🚫 Esta hora ya está ocupada.");
       return;
     }
 
@@ -141,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         hora,
       });
 
-      // 🗓️ Crear evento en calendario
+      // 🗓️ Guardar cita en el calendario mediante Apps Script
       const postData = { nombre, email, servicio, fecha, hora };
       const response = await fetch(`${proxyUrl}${googleScriptUrl}`, {
         method: "POST",
@@ -156,11 +180,15 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMsg.style.display = "none";
         form.reset();
         generarHoras();
+
+        // 🧹 Limpiar caché del día afectado
         localStorage.removeItem(`ocupadas_${fecha}`);
+
         alert("✅ Cita registrada correctamente.");
       } else {
         throw new Error(result.message || "Error al crear la cita.");
       }
+
     } catch (err) {
       console.error("❌ Error al enviar cita:", err);
       successMsg.style.display = "none";
