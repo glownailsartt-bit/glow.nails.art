@@ -29,10 +29,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🔒 Evitar seleccionar fechas pasadas
+  // 🔒 Bloquear selección de fechas pasadas en el calendario
   const hoy = new Date();
   const hoyStr = hoy.toISOString().split("T")[0];
-  fechaInput.min = hoyStr;
+  fechaInput.min = hoyStr; // ⛔ No se puede elegir antes de hoy
 
   // 🟣 Mostrar loader mientras se consulta disponibilidad
   function mostrarLoader(mostrar) {
@@ -44,14 +44,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🟢 Marcar horas ocupadas en el select
+  // 🟢 Marcar horas ocupadas o pasadas
   function mostrarHorasOcupadas(ocupadas = [], fechaSeleccionada) {
     generarHoras();
 
     const ahora = new Date();
     const fechaHoy = ahora.toISOString().split("T")[0];
 
-    // ⏰ Si es hoy, bloquear horas anteriores a la actual
+    // ⏰ Si es hoy, bloquear horas pasadas
     if (fechaSeleccionada === fechaHoy) {
       const horaActual = ahora.getHours();
       [...horaSelect.options].forEach(opt => {
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    // 🔴 Marcar las horas que ya están ocupadas
+    // 🔴 Marcar horas ocupadas
     ocupadas.forEach(horaOcupada => {
       const opt = [...horaSelect.options].find(o => o.value === horaOcupada);
       if (opt) {
@@ -80,12 +80,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const fecha = fechaInput.value;
     if (!fecha) return;
 
+    // 🚫 Evitar fechas pasadas manualmente
+    const hoy = new Date();
+    const fechaSeleccionada = new Date(fecha + "T00:00:00");
+    if (fechaSeleccionada < new Date(hoyStr + "T00:00:00")) {
+      alert("🚫 No puedes agendar en una fecha anterior a hoy.");
+      fechaInput.value = hoyStr;
+      return;
+    }
+
     const cacheKey = `ocupadas_${fecha}`;
     const cached = localStorage.getItem(cacheKey);
 
     mostrarLoader(true);
 
-    // 🧠 Si ya hay caché, usarla inmediatamente
+    // 🧠 Si ya hay caché, usarla
     if (cached) {
       const horas = JSON.parse(cached);
       mostrarHorasOcupadas(horas, fecha);
@@ -130,15 +139,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // 🚫 Bloquear citas en fechas pasadas
+    // 🚫 Bloquear envío en fechas pasadas
     const hoy = new Date();
-    const fechaSeleccionada = new Date(fecha);
-    if (fechaSeleccionada < new Date(hoyStr)) {
+    const fechaSeleccionada = new Date(fecha + "T00:00:00");
+    if (fechaSeleccionada < new Date(hoyStr + "T00:00:00")) {
       alert("🚫 No puedes agendar en una fecha pasada.");
       return;
     }
 
-    // 🚫 Si es hoy y la hora ya pasó
+    // 🚫 Si es hoy, no permitir horas pasadas
     if (fechaSeleccionada.toISOString().split("T")[0] === hoyStr) {
       const horaActual = hoy.getHours();
       const horaSeleccionada = parseInt(hora.split(":")[0]);
@@ -180,10 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMsg.style.display = "none";
         form.reset();
         generarHoras();
-
-        // 🧹 Limpiar caché del día afectado
         localStorage.removeItem(`ocupadas_${fecha}`);
-
         alert("✅ Cita registrada correctamente.");
       } else {
         throw new Error(result.message || "Error al crear la cita.");
