@@ -1,5 +1,6 @@
+// ✅ Inicializa EmailJS correctamente
 (function () {
-  emailjs.init("Xfy8rt5BbNV_iG2CB");
+  emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -9,10 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const horaSelect = document.getElementById("hora");
   const fechaInput = document.getElementById("fecha");
 
-  // 🟢 URL de tu Google Apps Script (ya funcional)
+  // 🟢 Tu Google Apps Script publicado
   const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwbuGpcYr7LPurHdLgI03hqmScNh6pl_-tuLhwRYASn7bs7Xk1-oTpzouydPZ6GX6aWug/exec";
 
-  // 🟢 Proxy Cloudflare estable y gratuito
+  // 🟢 Proxy para evitar CORS
   const proxyUrl = "https://proxyagenda.glow-nails-artt.workers.dev/?url=";
 
   // 🕓 Generar horarios de 8:00 a 17:00
@@ -27,31 +28,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // 🟣 Mostrar loader mientras se consulta disponibilidad
+  function mostrarLoader(mostrar) {
+    if (mostrar) {
+      horaSelect.innerHTML = '<option>Cargando disponibilidad...</option>';
+      horaSelect.disabled = true;
+    } else {
+      horaSelect.disabled = false;
+    }
+  }
+
+  // 🟢 Marcar horas ocupadas en el select
+  function mostrarHorasOcupadas(ocupadas = []) {
+    generarHoras();
+    ocupadas.forEach(horaOcupada => {
+      const opt = [...horaSelect.options].find(o => o.value === horaOcupada);
+      if (opt) {
+        opt.disabled = true;
+        opt.textContent += " (Ocupada)";
+      }
+    });
+  }
+
   generarHoras();
 
-  // 📅 Al cambiar la fecha, consultar disponibilidad
+  // 📅 Consultar disponibilidad al cambiar la fecha
   fechaInput.addEventListener("change", async () => {
     const fecha = fechaInput.value;
     if (!fecha) return;
 
+    const cacheKey = `ocupadas_${fecha}`;
+    const cached = localStorage.getItem(cacheKey);
+
+    mostrarLoader(true);
+
+    // 🧠 Si ya hay caché, usarla al instante
+    if (cached) {
+      const horas = JSON.parse(cached);
+      mostrarHorasOcupadas(horas);
+      mostrarLoader(false);
+      console.log("📦 Usando caché de disponibilidad:", horas);
+      return;
+    }
+
+    console.log("📡 Consultando disponibilidad para:", fecha);
     try {
       const res = await fetch(`${proxyUrl}${googleScriptUrl}?fecha=${fecha}`);
       const data = await res.json();
 
-      generarHoras();
-
       if (data.ocupadas && Array.isArray(data.ocupadas)) {
-        data.ocupadas.forEach(horaOcupada => {
-          const opt = [...horaSelect.options].find(o => o.value === horaOcupada);
-          if (opt) {
-            opt.disabled = true;
-            opt.textContent += " (Ocupada)";
-          }
-        });
+        localStorage.setItem(cacheKey, JSON.stringify(data.ocupadas));
+        mostrarHorasOcupadas(data.ocupadas);
+      } else {
+        mostrarHorasOcupadas([]);
       }
+
     } catch (err) {
       console.error("❌ Error al obtener disponibilidad:", err);
       alert("Error al verificar disponibilidad. Intenta nuevamente más tarde.");
+      generarHoras();
+    } finally {
+      mostrarLoader(false);
     }
   });
 
@@ -75,6 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    form.querySelector("button[type='submit']").disabled = true;
+
     try {
       // ✉️ Enviar correo de confirmación
       await emailjs.send("service_tp0xzhi", "template_6csycq9", {
@@ -94,11 +133,17 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       const result = await response.json();
+
       if (result.success) {
         successMsg.style.display = "block";
         errorMsg.style.display = "none";
         form.reset();
         generarHoras();
+
+        // 🧹 Limpiar caché del día afectado para evitar duplicados
+        localStorage.removeItem(`ocupadas_${fecha}`);
+
+        alert("✅ Cita registrada correctamente.");
       } else {
         throw new Error(result.message || "Error al crear la cita.");
       }
@@ -108,6 +153,8 @@ document.addEventListener("DOMContentLoaded", () => {
       successMsg.style.display = "none";
       errorMsg.style.display = "block";
       alert("❌ No se pudo registrar la cita. Intenta nuevamente.");
+    } finally {
+      form.querySelector("button[type='submit']").disabled = false;
     }
   });
 });
