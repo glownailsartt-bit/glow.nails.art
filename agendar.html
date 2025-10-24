@@ -45,6 +45,10 @@
     <form id="citaForm">
       <input type="text" id="nombre" placeholder="Tu nombre completo" required />
       <input type="email" id="email" placeholder="Tu correo electrónico" required />
+
+      <!-- 📱 NUEVO: número de teléfono -->
+      <input type="tel" id="telefono" placeholder="Tu número de WhatsApp (Ej: 3124567890)" required pattern="[0-9]{10}" />
+
       <select id="servicio" required>
         <option value="">Selecciona un servicio</option>
         <option>Manicure clásico</option>
