@@ -1,6 +1,6 @@
 // ✅ Inicializa EmailJS correctamente
 (function () {
-  emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key
+  emailjs.init("Xfy8rt5BbNV_iG2CB"); // Tu Public Key de EmailJS
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -11,7 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const fechaInput = document.getElementById("fecha");
 
   // 🟢 Tu Google Apps Script publicado
-  const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwbuGpcYr7LPurHdLgI03hqmScNh6pl_-tuLhwRYASn7bs7Xk1-oTpzouydPZ6GX6aWug/exec";
+  const googleScriptUrl =
+    "https://script.google.com/macros/s/AKfycbwbuGpcYr7LPurHdLgI03hqmScNh6pl_-tuLhwRYASn7bs7Xk1-oTpzouydPZ6GX6aWug/exec";
 
   // 🟢 Proxy para evitar CORS
   const proxyUrl = "https://proxyagenda.glow-nails-artt.workers.dev/?url=";
@@ -41,8 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🟢 Marcar horas ocupadas en el select
   function mostrarHorasOcupadas(ocupadas = []) {
     generarHoras();
-    ocupadas.forEach(horaOcupada => {
-      const opt = [...horaSelect.options].find(o => o.value === horaOcupada);
+    ocupadas.forEach((horaOcupada) => {
+      const opt = [...horaSelect.options].find((o) => o.value === horaOcupada);
       if (opt) {
         opt.disabled = true;
         opt.textContent += " (Ocupada)";
@@ -82,7 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         mostrarHorasOcupadas([]);
       }
-
     } catch (err) {
       console.error("❌ Error al obtener disponibilidad:", err);
       alert("Error al verificar disponibilidad. Intenta nuevamente más tarde.");
@@ -98,11 +98,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nombre = document.getElementById("nombre").value.trim();
     const email = document.getElementById("email").value.trim();
+    const telefono = document.getElementById("telefono").value.trim();
     const servicio = document.getElementById("servicio").value;
     const fecha = fechaInput.value;
     const hora = horaSelect.value;
 
-    if (!nombre || !email || !servicio || !fecha || !hora) {
+    if (!nombre || !email || !telefono || !servicio || !fecha || !hora) {
       alert("⚠️ Por favor completa todos los campos antes de enviar.");
       return;
     }
@@ -125,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       // 🗓️ Guardar cita en el calendario mediante Apps Script
-      const postData = { nombre, email, servicio, fecha, hora };
+      const postData = { nombre, email, telefono, servicio, fecha, hora };
       const response = await fetch(`${proxyUrl}${googleScriptUrl}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -144,10 +145,25 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem(`ocupadas_${fecha}`);
 
         alert("✅ Cita registrada correctamente.");
+
+        // ✅ Enviar mensaje de WhatsApp al cliente y a ti
+        const mensaje = `💅 *Confirmación de cita - Glow Nails Art* 💅%0A
+👩‍💼 Nombre: ${nombre}%0A
+📅 Fecha: ${fecha}%0A
+🕒 Hora: ${hora}%0A
+💖 Servicio: ${servicio}%0A%0A
+¡Gracias por agendar con nosotras! 🌸`;
+
+        // 🟣 Enviar mensaje a tu WhatsApp
+        window.open(`https://wa.me/573124563132?text=${mensaje}`, "_blank");
+
+        // 🟢 Enviar mensaje al cliente
+        if (telefono) {
+          window.open(`https://wa.me/57${telefono}?text=${mensaje}`, "_blank");
+        }
       } else {
         throw new Error(result.message || "Error al crear la cita.");
       }
-
     } catch (err) {
       console.error("❌ Error al enviar cita:", err);
       successMsg.style.display = "none";
