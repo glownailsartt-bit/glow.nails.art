@@ -98,12 +98,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nombre = document.getElementById("nombre").value.trim();
     const email = document.getElementById("email").value.trim();
-    const telefono = document.getElementById("telefono").value.trim();
+    // Si tienes el campo telefono en el formulario lo enviamos al script (no se usa para WhatsApp)
+    const telefonoInput = document.getElementById("telefono");
+    const telefono = telefonoInput ? telefonoInput.value.trim() : "";
     const servicio = document.getElementById("servicio").value;
     const fecha = fechaInput.value;
     const hora = horaSelect.value;
 
-    if (!nombre || !email || !telefono || !servicio || !fecha || !hora) {
+    if (!nombre || !email || !servicio || !fecha || !hora) {
       alert("⚠️ Por favor completa todos los campos antes de enviar.");
       return;
     }
@@ -145,22 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem(`ocupadas_${fecha}`);
 
         alert("✅ Cita registrada correctamente.");
-
-        // ✅ Enviar mensaje de WhatsApp al cliente y a ti
-        const mensaje = `💅 *Confirmación de cita - Glow Nails Art* 💅%0A
-👩‍💼 Nombre: ${nombre}%0A
-📅 Fecha: ${fecha}%0A
-🕒 Hora: ${hora}%0A
-💖 Servicio: ${servicio}%0A%0A
-¡Gracias por agendar con nosotras! 🌸`;
-
-        // 🟣 Enviar mensaje a tu WhatsApp
-        window.open(`https://wa.me/573124563132?text=${mensaje}`, "_blank");
-
-        // 🟢 Enviar mensaje al cliente
-        if (telefono) {
-          window.open(`https://wa.me/57${telefono}?text=${mensaje}`, "_blank");
-        }
       } else {
         throw new Error(result.message || "Error al crear la cita.");
       }
